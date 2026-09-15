@@ -1,0 +1,30 @@
+{
+  "score": 82,
+  "issues": [
+    {
+      "type": "warning",
+      "message": "Title too short (6 chars). Aim for 50-60 characters."
+    },
+    {
+      "type": "warning",
+      "message": "Meta description too short (105 chars). Aim for 150-160 characters."
+    },
+    {
+      "type": "warning",
+      "message": "43 image(s) missing alt text"
+    }
+  ],
+  "passed": [
+    "Single H1 heading present",
+    "Canonical URL is set",
+    "Open Graph meta tags present",
+    "Viewport meta tag present",
+    "Language attribute set"
+  ],
+  "meta": {
+    "title": "holmes",
+    "description": "your mac, agentic. holmes is the all-in-one ai agent for mac that reduces your busywork and acts locally.",
+    "canonical": "https://tryholmes.framer.website/",
+    "ogImage": "https://framerusercontent.com/images/iHfyaeUycsfO77gPGm9Zl7ivSc.png"
+  }
+}
