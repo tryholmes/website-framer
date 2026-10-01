@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify your email · holmes</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="https://framerusercontent.com/images/tYYRLjjOAgGhnpT9YbvCcEcxk4.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas: #060606;
+    --ink: #f6f0e9;
+    --ink-2: rgba(246, 240, 233, 0.66);
+    --ink-3: rgba(246, 240, 233, 0.46);
+    --rule: rgba(246, 240, 233, 0.12);
+    --ok: #199e70;
+    --danger: #ff7a70;
+    font-family: "Geist", ui-sans-serif, -apple-system, "Helvetica Neue", sans-serif;
+  }
+  html, body { margin: 0; height: 100%; background: var(--canvas); color: var(--ink); }
+  main { min-height: 100%; display: grid; place-items: center; padding: 24px 16px; box-sizing: border-box; }
+  .card { width: 100%; max-width: 420px; text-align: center; }
+  .brand { font-family: ui-serif, Georgia, serif; font-size: 44px; letter-spacing: -0.5px; margin: 0 0 28px; }
+  .mark { width: 44px; height: 44px; border-radius: 50%; margin: 0 auto 18px; display: grid; place-items: center;
+          border: 1px solid var(--rule); font-size: 20px; }
+  .mark.ok { color: var(--ok); border-color: var(--ok); }
+  .mark.bad { color: var(--danger); border-color: var(--danger); }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 10px; }
+  p { color: var(--ink-2); font-size: 15px; line-height: 1.55; margin: 0; }
+  .fine { color: var(--ink-3); font-size: 13px; margin-top: 28px; }
+  a { color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <p class="brand">holmes</p>
+    <div class="mark" id="mark">&hellip;</div>
+    <h1 id="title">Verifying your email</h1>
+    <p id="detail">One moment.</p>
+    <p class="fine">Need Holmes? <a href="https://holmes-download.appwrite.network/?source=verify">Download for Mac</a></p>
+  </div>
+</main>
+<script>
+  // Appwrite sends people here from the verification email with userId and
+  // secret in the query string. Confirming them needs no session, so this
+  // works in any browser, not only on the Mac running Holmes.
+  const ENDPOINT = 'https://sfo.cloud.appwrite.io/v1';
+  const PROJECT = 'holmes';
+
+  const show = (state, title, detail) => {
+    const mark = document.getElementById('mark');
+    mark.className = 'mark ' + state;
+    mark.textContent = state === 'ok' ? '✓' : '!';
+    document.getElementById('title').textContent = title;
+    document.getElementById('detail').textContent = detail;
+  };
+
+  (async () => {
+    const params = new URLSearchParams(location.search);
+    const userId = params.get('userId');
+    const secret = params.get('secret');
+    if (!userId || !secret) {
+      show('bad', 'This link is incomplete', 'Open the link from your verification email again, or send a new one from Holmes.');
+      return;
+    }
+    try {
+      const response = await fetch(ENDPOINT + '/account/verifications/email', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json', 'x-appwrite-project': PROJECT },
+        body: JSON.stringify({ userId, secret }),
+      });
+      if (response.ok) {
+        show('ok', 'Your email is verified', 'Go back to Holmes. It continues on its own in a few seconds.');
+        history.replaceState(null, '', location.pathname);
+        return;
+      }
+      const body = await response.json().catch(() => ({}));
+      const expired = body.type === 'user_invalid_token' || response.status === 401;
+      show('bad',
+        expired ? 'This link has expired' : 'We couldn’t verify your email',
+        expired ? 'In Holmes, choose Resend email to get a fresh link.' : 'Try the link again in a minute, or choose Resend email in Holmes.');
+    } catch {
+      show('bad', 'You look offline', 'Check your connection, then open the link again.');
+    }
+  })();
+</script>
+</body>
+</html>
